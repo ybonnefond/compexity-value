@@ -1,42 +1,36 @@
 <html>
   <head>
     <style>
+      body {
+        background-color: #1f1f1f;
+        color: aliceblue;
+      }
       canvas{
         -moz-user-select: none;
         -webkit-user-select: none;
         -ms-user-select: none;
         cursor: pointer;
       }
-      .chartjs-tooltip {
-        opacity: 1;
-        position: absolute;
-        background: rgba(0, 0, 0, .7);
-        color: white;
-        border-radius: 3px;
-        -webkit-transition: all .1s ease;
-        transition: all .1s ease;
-        pointer-events: none;
-        -webkit-transform: translate(-50%, 0);
-        transform: translate(-50%, 0);
-        padding: 4px;
-      }
-  
-      .chartjs-tooltip-key {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
+      #file {
+        margin: 50px;
       }
     </style>
   </head>
 <body>
-  <div class="chartjs-tooltip" id="tooltip"></div>
-
+<div id="file">
   <form action='#' onsubmit="return false;">
-    <input type='file' id='input' onchange="load()">
-    <input type='button' onclick="load()" value="load">
+    <input type='file' id='input' onchange="loadFile()" />
+    <hr />
+<!--    <div>-->
+<!--      <label for="x">X</label>-->
+<!--      <select id="x" onchange="load()"></select>-->
+<!--    </div>-->
+<!--    <div>-->
+<!--      <label for="x">Y</label>-->
+<!--      <select id="y" onchange="load()"></select>-->
+<!--    </div>-->
   </form>
-
-  <br />
+</div>
 
   <div>
     <canvas id="chart" style="display: block; width: 100%; height: 100%;" width="800" height="400"></canvas>
@@ -87,9 +81,9 @@
             summary: issue['Summary'],
             assignee: issue['Assagnee'],
             assignee: issue['Reporter'],
-            votes: parseInt(issue['Votes'], 10) || 15,
-            value: parseInt(issue['Custom field (Business Value)'], 10) || randomFibo(),
-            complexity: parseInt(issue['Custom field (Story Points)'], 10) || randomFibo(),
+            votes: parseInt(issue['Votes'], 10) || 0,
+            value: parseInt(issue['Custom field (Business Value)'], 10) || 0, //randomFibo(),
+            complexity: parseInt(issue['Custom field (Story Points)'], 10) || 0, // randomFibo(),
             link: `https://jira.solocal.com/browse/${issue['Issue key']}`
           };
         });
@@ -100,12 +94,16 @@
       const i = Math.floor(Math.random() * values.length);
       return values[i];
     }
-    
+
     function getAxis(title, ticks) {
+      const axisColor = 'rgb(102,102,102)';
       return [{
                 type: 'category',
                 labels: ticks,
-                color: 'rgba(0, 0, 0, 0)',
+                color: axisColor,
+                gridLines: {
+                  color: axisColor,
+                },
                 scaleLabel: {
                   display: true,
                   labelString: title
@@ -117,7 +115,7 @@
       var options = {
         aspectRatio: 0.5,
         legend: false,
-        tooltips: { 
+        tooltips: {
           mode: 'point'
         },
         scales: {
@@ -172,7 +170,7 @@
           options
       });
     }
-    
+
 
     async function load() {
         const data = await parse();
