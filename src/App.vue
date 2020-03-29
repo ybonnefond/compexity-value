@@ -1,5 +1,6 @@
 <template>
   <section class="section">
+    <div class="container">
     <nav class="level">
       <div class="level-left">
         <file-loader></file-loader>
@@ -13,6 +14,7 @@
     <hr />
 
     <bubble-chart></bubble-chart>
+    </div>
   </section>
 </template>
 
@@ -31,8 +33,4 @@
   @import "~bulma/bulma.sass";
   @import "~bulmaswatch/slate/_variables.scss";
   @import "~bulmaswatch/slate/_overrides.scss";
-
-  section {
-
-  }
 </style>
