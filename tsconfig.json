@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "commonjs",
+    "sourceMap": true,
+    "incremental": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+
+    "allowJs": true,
+
+    /* Strict Type-Checking Options */
+    "strict": true,
+
+    /* Additional Checks */
+    "noImplicitReturns": true,
+    "noUnusedParameters": false,
+
+    /* Module Resolution Options */
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*",
+    "index.d.ts"
+  ]
+}
