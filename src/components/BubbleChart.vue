@@ -1,19 +1,30 @@
 <template>
+  <div>
+    <modal :show="showModal" @close="resetLinks()">
+      <div v-for="link in links">
+        <a target="_blank" :href="link">{{link}}</a>
+      </div>
+    </modal>
     <canvas ref="bubble-chart-canvas" width="800" height="400"></canvas>
+  </div>
 </template>
 
 <script lang="ts">
   import Chart from 'chart.js';
   import {mapState} from "vuex";
+  import Modal from './Modal';
+
+  type Coordinates = { x: number, y: number};
 
   export default {
     name: "BubbleChart",
+    components: {Modal},
     computed: {
       ...mapState(['issues', 'chartConfig']),
       datasets() {
         const isString = (v: any) => typeof v === 'string' && v.length > 0;
 
-        if (['x', 'y', 'r'].some((k) => {
+        if (['x', 'y'/*, 'r'*/].some((k) => {
           return !isString(this.chartConfig[k]);
         })) {
           return [];
@@ -30,7 +41,7 @@
 
               const x = issue[this.chartConfig.x] || randomFibo();
               const y = issue[this.chartConfig.y] || randomFibo();
-              const r = issue[this.chartConfig.r] * 5 + 10 || 10;
+              const r = 15; //issue[this.chartConfig.r] * 5 + 10 || 10;
 
               return {
                 x,
@@ -50,6 +61,8 @@
         ctx: null,
         chart: null,
         gradientRotation: 200,
+        showModal: false,
+        links: []
       }
     },
     mounted() {
@@ -70,11 +83,22 @@
       });
     },
     methods: {
+      showLinks(links) {
+        this.links = links;
+        this.showModal = true;
+      },
+
+      resetLinks() {
+        this.links = [];
+        this.showModal = false;
+      },
+
       update() {
         this.chart.data.datasets = this.datasets;
         this.chart.options = this.getOptions();
         this.chart.update();
       },
+
       getDefaultOptions() {
         return {
           aspectRatio: 1,
@@ -92,6 +116,7 @@
         const chart = this.chart;
         const options = {
           ...this.getDefaultOptions(),
+          tooltipEvents: ['click'],
           tooltips: {
             mode: 'point',
             callbacks: {
@@ -102,11 +127,13 @@
             }
           },
           onClick: (e: Event) => {
+            const links = [];
             var elements = this.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true });
             for(const element of elements) {
               const {link} = this.chart.data.datasets[element._datasetIndex].data[element._index];
-              window.open(link, '_blank');
+              links.push(link);
             }
+            this.showLinks(links);
           },
           elements: {
             point: {
@@ -156,19 +183,74 @@
           }
         }]
       },
+
+      rotateCoordinates(point: Coordinates, center: Coordinates, angle: number) {
+        // translate to the center
+        const t = {
+          x: point.x - center.x,
+          y: point.y - center.y;
+        };
+
+        // rotate
+        const r = {
+          x: t.x * Math.cos(angle) - t.y * Math.sin(angle),
+          y: t.x * Math.sin(angle) + t.y * Math.cos(angle),
+        };
+
+        return {
+          x: r.x + center.x,
+          y: r.y + center.y
+        };
+      },
+
+      getAngle(left: number, top: number, right: number, bottom: number) {
+        return Math.atan((right - left) / (bottom - top)) * 180/Math.PI;
+      },
+
       getGradient(opacity = 1) {
         return (context: any) => {
-          const chartArea = context.chart.chartArea;
-          const grd: CanvasGradient = context.chart.chart.ctx.createLinearGradient(this.gradientRotation, 0 - this.gradientRotation, chartArea.right - this.gradientRotation, chartArea.bottom + this.gradientRotation / 2);
+          const {left, top, right, bottom} = context.chart.chartArea;
 
-          const red = `rgb(250,85,85, ${opacity})`;
-          const yellow = `rgb(230,255,140, ${opacity})`;
-          const green = `rgb(130,230,100, ${opacity})`;
-          grd.addColorStop(0.2, red);
-          grd.addColorStop(0.5, yellow);
-          grd.addColorStop(0.8, green);
+          const center = {x: left + (right - left) / 2, y: top + (bottom - top) / 2};
+          const bc = bottom - top;
+          const ab = right - left;
+          const ac = Math.sqrt(Math.pow(bc, 2) + Math.pow(ab, 2));
 
-          return grd
+          const sinTeta = ab / ac;
+          const cosTeta = bc / ac;
+
+          const p0 = { x: left, y: center.y };
+          const p1 = { x: right, y :center.y};
+
+          function rotate(p) {
+            // translate to center
+            const t = { x:p.x - center.x, y: p.y - center.y };
+            // rotate
+            const r = {
+              x: t.x * cosTeta - t.y * sinTeta,
+              y: t.x * sinTeta + t.y * cosTeta
+            };
+
+            // translate back
+            return {
+              x: center.x + r.x,
+              y: center.y + r.y,
+            };
+          }
+
+          function getGradient(ctx, w, z) {
+            const grd = ctx.createLinearGradient(w.x, w.y, z.x, z.y);
+            const red = `rgb(250,85,85, 1)`;
+            const yellow = `rgb(230,255,140, 1)`;
+            const green = `rgb(130,230,100, 1)`;
+            grd.addColorStop(0.3, red);
+            grd.addColorStop(0.5, yellow);
+            grd.addColorStop(0.7, green);
+
+            return grd;
+          }
+
+          return getGradient(context.chart.chart.ctx, rotate(p0), rotate(p1));
         }
       }
     },

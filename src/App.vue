@@ -33,4 +33,9 @@
   @import "~bulma/bulma.sass";
   @import "~bulmaswatch/slate/_variables.scss";
   @import "~bulmaswatch/slate/_overrides.scss";
+
+  html {
+    background-color: $body-background-color;
+    overflow-y: auto;
+  }
 </style>

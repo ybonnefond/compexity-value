@@ -15,12 +15,12 @@
         </select>
       </div>
 
-      <div class="select is-small">
-        <select v-model="r">
-          <option value="">Pick Size value...</option>
-          <option v-for="key in numberKeys" :value="key">Size: {{key}}</option>
-        </select>
-      </div>
+<!--      <div class="select is-small">-->
+<!--        <select v-model="r">-->
+<!--          <option value="">Pick Size value...</option>-->
+<!--          <option v-for="key in numberKeys" :value="key">Size: {{key}}</option>-->
+<!--        </select>-->
+<!--      </div>-->
 
       <button
         v-on:click="setChartConfig({x, y, r})"
