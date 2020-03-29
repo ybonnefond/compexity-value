@@ -2,3 +2,4 @@ fixtures/
 .idea/
 node_modules/
 .cache/
+dist/
